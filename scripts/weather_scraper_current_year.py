@@ -13,6 +13,8 @@ Notes:
     these data, e.g., snow, windy, rain etc.                                                     
 """
 
+cur_dir = ('/home/tom/nfl_models/')
+
 from time import sleep
 from random import randint
 from bs4 import BeautifulSoup
@@ -27,10 +29,12 @@ from selenium.common.exceptions import *
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import cleaning_dicts
+from utils import cleaning_dicts
+
+cur_week=6
 
 #chrome stuff initiate
-cur_dir = ('/home/tom/Downloads/nfl_scrape/')
+
 chrome_dir = 'E:/PFF/pff_2020/chromedriver.exe'
 ## Create variable that looks up the chrome driver library ##
 
@@ -45,11 +49,11 @@ delay = 5
 
 catch=[]
 #create current year, week list of numbers
-year_list = ['2014','2015','2016','2017','2018','2019','2020','2021']#
+year_list = ['2022']#
 week_list = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19']
 for y in year_list:
     for w in week_list:
-        if y == '2021' and w == '19':
+        if y == '2022' and w == cur_week+1:
             break
         url = 'http://www.nflweather.com/en/week/'+y+'/week-'+w+'/'
         driver.get(url)            
@@ -72,7 +76,7 @@ final2 = final[[1,3,5,9,10,11,'year','week']]
 
 final2.columns = ['away','at','home','forcast','detailed','wind','year','week']
 final2 = final2.applymap(lambda x: str(x).strip())
-final2.to_csv('/home/tom/Downloads/nfl_scrape/weather.csv', index=False)
+#final2.to_csv('/home/tom/Downloads/nfl_scrape/weather.csv', index=False)
 
 import pandas as pd
 import numpy as np
@@ -118,7 +122,7 @@ def clean_spreads(df):
 df = clean_spreads(df)
 
 df = df[['away_matchup_id','precip','dome','temperature','wind_mph']]
-df.to_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/weather/weather_hist_all.csv', index=False)
+df.to_csv('./current_data/week_'+cur_week+'/weather_data.csv', index=False)
 
 
 

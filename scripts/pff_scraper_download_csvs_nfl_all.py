@@ -30,12 +30,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 chrome_options = Options()
+chrome_options.add_experimental_option("prefs", {"download.default_directory": r"./"})
 chrome_options.add_argument('--no-sandbox')
 driver = webdriver.Chrome('/home/tomb/nfl_models/chromedriver',chrome_options=chrome_options)
 
+
 #os.path.abspath(os.getcwd())
 
-cur_week = str(4)
+cur_week = str(10)
 
 os.chdir('/home/tomb/nfl_models/scripts/')
 delay = 2
@@ -45,7 +47,7 @@ delay = 2
 
 ### CHANGE ALL DATES, INCLUDING TEXT FILES3BEFORE BEGINNING TO SCRAPE ###
 year_list = ['2022']#,'2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021']#,'2009','2010','2011','2012',
-week_list = ['1','2','3']#,'5','6','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+week_list = ['1','2','3','4','5','6','7','8','9']#,,'5','6','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
 
 
 
@@ -439,20 +441,11 @@ st_punters.to_csv('./nfl_all/st_punters_'+yr+'.csv', index=False)
 
 
 
-
-#
-passing_summ_conc.to_csv('./nfl_all/qb_standard_hist_w'+cur_week+'.csv', index=False)
-rec_summ_conc.to_csv('/nfl_all/rec_standard_hist_w'+cur_week+'.csv', index=False)
-rush_summ_conc.to_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/rush_standard_hist_w'+cur_week+'.csv', index=False)
-block_summ_conc.to_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/ol_standard_hist_w'+cur_week+'.csv', index=False)
-def_summ_conc.to_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/def_standard_hist_w'+cur_week+'.csv', index=False)
-#rush_elu_full.to_csv('E:\\PFF\\pff_csvs\\2019_csvs\\rush_elu_hist.csv', index=False)
-#rush_brk_full.to_csv('E:\\PFF\\pff_csvs\\2019_csvs\\rush_brk_hist.csv', index=False)
-#allow_press_full.to_csv('E:\\PFF\\pff_csvs\\2019_csvs\\allow_press_hist.csv', index=False)
 #
 #
 
 import re
+import time
 
 year = '2022'
 yr = '2022'
@@ -488,15 +481,18 @@ team_list = ['arizona-cardinals',
 'seattle-seahawks',
 'tampa-bay-buccaneers',
 'tennessee-titans',
-'washington-football-team']
+'washington-commanders']
 
 list_of_dfs = []
 summ_list,block_list,pass_list,passpress_list,rush_list,rushdir_list, rec_list, def_list = [],[],[],[],[],[],[],[]
 urls, completed_urls = [],[]
 
+yr='2022'
+year='2022'
 ids_list, game_list, plyr_data = [], [], []
 for team_num, tm in enumerate(team_list, start=1):
     team_season_url = 'https://premium.pff.com/nfl/teams/'+tm+'/summary?season='+yr+'&weekGroup=REGPO'
+    print(team_season_url)
     sleep(randint(1,3))
     driver.get(team_season_url)
     sleep(randint(1,3))
@@ -582,7 +578,7 @@ year_team_summ = year_team_summ.dropna(thresh=10)
 year_team_summ = year_team_summ[year_team_summ['game_id'] !='None']
 
 
-year_team_summ= pd.read_csv('/home/tom/spreads_2022/historic_data/team_game_summaries_historic.csv')
+#year_team_summ= pd.read_csv('/home/tom/spreads_2022/historic_data/team_game_summaries_historic.csv')
                       
 year_team_summ['dateInt']=year_team_summ['year'].astype(str) + '/'+year_team_summ['date'].astype(str)#+' '+year_team_summ['time'].astype(str)
 year_team_summ['Date'] = pd.to_datetime(year_team_summ['dateInt'])#, format='%Y%m%d')
@@ -591,5 +587,5 @@ year_team_summ['output'] = year_team_summ['output'].astype(str)
 year_team_summ['output'] = year_team_summ['output'].str.replace(' days','')
 
 
-year_team_summ.to_csv('/home/tomb/nfl_models/current_data/week_'+cur_week+'/team_game_summaries_2021_w'+cur_week+'.csv', index=False)
+year_team_summ.to_csv('/home/tomb/nfl_models/current_data/week_'+cur_week+'/team_game_summaries_w'+cur_week+'.csv', index=False)
 

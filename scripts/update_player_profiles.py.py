@@ -26,20 +26,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
-os.chdir('/home/tom/Downloads/nfl_scrape/')
-binary = "/home/tom/Downloads/chromedriver_linux64/chromedriver"
-driver = webdriver.Chrome(binary)
+chrome_options = Options()
+chrome_options.add_argument('--no-sandbox')
+driver = webdriver.Chrome('/home/tomb/nfl_models/chromedriver',chrome_options=chrome_options)
+
 #os.chdir(cur_dir)
 delay = 2
 
 
-qb = pd.read_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/qb_standard_hist_w4.csv', error_bad_lines=True)
-df = pd.read_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/def_standard_hist_w4.csv', error_bad_lines=True)
-wr= pd.read_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/rec_standard_hist_w4.csv', error_bad_lines=True)
-bl = pd.read_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/ol_standard_hist_w4.csv', error_bad_lines=True)
-
-rush = pd.read_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/historic_data/rush_standard_hist_w4.csv', error_bad_lines=True)
+qb = pd.read_csv('/home/tomb/nfl_models/scripts/nfl_all/passing_summ_conc_2022.csv', error_bad_lines=True)
+df = pd.read_csv('/home/tomb/nfl_models/scripts/nfl_all/def_summ_conc_2022.csv', error_bad_lines=True)
+wr= pd.read_csv('/home/tomb/nfl_models/scripts/nfl_all/rec_summ_conc_2022.csv', error_bad_lines=True)
+bl = pd.read_csv('/home/tomb/nfl_models/scripts/nfl_all/block_summ_conc_2022.csv', error_bad_lines=True)
+rush = pd.read_csv('/home/tomb/nfl_models/scripts/nfl_all/rush_summ_conc_2022.csv', error_bad_lines=True)
 
 qb = qb[['player','player_id','position','team_name']]
 df = df[['player','player_id','position','team_name']]
@@ -49,6 +51,8 @@ rush = rush[['player','player_id','position','team_name']]
 
 comb = pd.concat([qb, rush, df, bl, rush], axis=0)
 comb.drop_duplicates(inplace=True)
+
+# df = pd.read_csv('/home/tomb/nfl_models/pffpp.csv', error_bad_lines=True)
 
 df = comb
 import re
@@ -61,9 +65,11 @@ df['player'] = df['player'].str.lower()
 count=0
 data, completed = [], []
 
+# df=df[df['year']==2020]
+
 for p,x in zip(df['player'],df['player_id']):
     count+=1
-    url = 'https://premium.pff.com/nfl/players/'+p+'/'+str(x)+'/snap/summary?season=2021&weekGroup=REG'
+    url = 'https://premium.pff.com/nfl/players/2021/REGPO/'+p+'/'+str(x)+'/snaps'
     try:
         driver.get(url)
         myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.CLASS_NAME, "g-profile__bio-element")))
@@ -94,7 +100,7 @@ for p,x in zip(df['player'],df['player_id']):
         except IndexError:
             sel = ''
         pid = x
-    frm = "{},{},{},{},{},{},{},{},{},{},{}".format(p,pid,bday,ht,wt,spd,schl,draft_yr,draft_tm,rnd,sel)
+    frm = "{},{},{},{},{},{},{},{},{},{},{}".format(p,x,bday,ht,wt,spd,schl,draft_yr,draft_tm,rnd,sel)
     print(frm)
     data.append(frm)
     completed.append(plyr)
@@ -128,10 +134,11 @@ ht_Dict = {"6":"72",
 "510":"70",
 "511":"71"}
 
-df2['height'] = df2['ht'].map(ht_Dict)
+
+df2['height'] = df2['ht'].map(ht_Dict).fillna(int(72))
 
 df2['height'] = df2['height'].astype(int)
-df2['wt'] = df2['wt'].astype(int)
+#df2['wt'] = df2['wt'].astype(int)
 
 
 df2['round'] = df2['round'].str.strip().replace("","FA")
@@ -154,7 +161,7 @@ df2['round'] = df2['round'].astype(int)
 
 #df2.to_csv('E:/PFF/pff_player_profiles_2020_v2.csv')
 
-core = pd.read_csv('/media/tom/Samsung 970 Evo NVMe 500gb/PFF/pff_players_2020.csv')
+#core = pd.read_csv('/home/tomb/nfl_models/other_data/pff_player_profiles_2022.csv')
 df2['pid'] = df2['pid'].astype(int)
 
 dfx = df[['player_id','position','team_name']]
@@ -162,13 +169,57 @@ dfx['player_id'] = dfx['player_id'].astype(int)
    
 df2 = pd.merge(df2, dfx, left_on='pid', right_on='player_id', how='left')
 
+
+clean_team_pff = {"arz":"ari",
+"blt":"bal",
+"clv":"cle",
+"hst":"hou",
+"la":"lar",
+"sd":"lac",
+"sl":"lar"}
+
+pos_dict = {"wlb":"lb",
+"ss":"s",
+"slb":"lb",
+"scb":"cb",
+"rolb":"lb",
+"rlb":"lb",
+"rilb":"lb",
+"re":"dl",
+"rcb":"cb",
+"nt":"dl",
+"mlb":"lb",
+"lolb":"lb",
+"llb":"lb",
+"lilb":"lb",
+"le":"dl",
+"lcb":"cb",
+"fs":"s",
+"drt":"dl",
+"dre":"dl",
+"dlt":"dl",
+"dle":"dl",
+"tel":"te",
+"slwr":"wr",
+"rg":"ol",
+"lg":"ol",
+"hb":"hb",
+"lwr":"wr",
+"c":"ol",
+"qb":"qb",
+"ter":"te",
+"rwr":"wr",
+"fb":"fb",
+"lt":"ol",
+"rt":"ol",
+"srwr":"wr"}
 def clean_name(df):
     df['name'] = df['name'].replace('-','')
     result = ''.join(c for c in df['name'] if c.isalpha())
     return result.lower()
 df2['player'] = df2.apply(lambda df: clean_name(df), axis=1)
-df2['year'] = '2021'
-import cleaning_dicts
+df2['year'] = '2020'
+
 def clean_pff(df):
 ##  basic scrubbing to clean data ##
     df['position']=df['position'].astype(str).str.lower()
@@ -180,8 +231,8 @@ def clean_pff(df):
 
    
     ##  pass team name through dictionary to clean ##
-    df['team_name'] = df['team_name'].map(cleaning_dicts.clean_team_pff).fillna(df['team_name'])
-    df['position'] = df['position'].map(cleaning_dicts.pos_dict).fillna(df['position'])
+    df['team_name'] = df['team_name'].map(clean_team_pff).fillna(df['team_name'])
+    df['position'] = df['position'].map(pos_dict).fillna(df['position'])
 
    
     ##  create our unique ids  ##
@@ -198,5 +249,5 @@ dfs = clean_pff(df2)
 
 dfs_clean = dfs[['unique_id','name','team_name','year','position','height','wt','speed','draft_yr','round','selection']]
 dfs_clean = dfs_clean.rename({'team_name': 'team'}, axis=1)
-
-dfs_clean.to_csv('/media/tom/Windows/Users/booth/Documents/spreads/spreads_2021/other_data/pff_player_profiles_2021_cleantoadd.csv')
+#dfs_clean['year']=2022
+dfs_clean.to_csv('/home/tomb/nfl_models/other_data/pff_player_profiles_2020backup_cleantoadd.csv')

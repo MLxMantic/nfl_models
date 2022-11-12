@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-cur_week=str(4)
+cur_week=str(10)
 
 chrome_options = Options()
 chrome_options.add_argument('--no-sandbox')
@@ -67,7 +67,9 @@ import csv
 import time
 from random import randint
 
-
+teams =["STL",
+"SD",
+"OAK"]
 
 teams =["CAR",
 "LAR",
@@ -101,10 +103,9 @@ teams =["CAR",
 "TEN",
 "JAX",
 "ATL",
-'SD',
-'OAK',
-'STL',
-]
+"STL",
+"SD",
+"OAK"]
 
 
 year=['2022']
@@ -229,9 +230,11 @@ df['team'] = df['team'].astype(str)
 df['week'] = df['week'].str.replace("Week ","")
 
 groupv2 = {'STL':'LAR',
-         'SD':'LAC'}
+         'SD':'LAC',
+         'OAK':'LV'}
 
 df['team'] = df['team'].map(groupv2).fillna(df['team'])
+df['opp'] = df['opp'].map(groupv2).fillna(df['opp'])
 df=df[~df.week.str.contains("There is no data to show.|CCG|WC|SB|DIV")]
 df=df[~df.opp.str.contains("BYE")]
 
@@ -239,8 +242,9 @@ def scale(nData, var=None):
     nData[var] = nData[var].apply(float)
     if (var == 'def_dvoa')|(var == 'def_pass_dvoa')|(var == 'def_rush_dvoa'):
         nData[var]=nData[var]*-1
-        nData[var] = nData.groupby('year')[var].apply(lambda x: round((x-x.min())/(x.max()-x.min()), 2))
+        #nData[var] = nData.groupby('year')[var].apply(lambda x: round((x-x.min())/(x.max()-x.min()), 2))
     else:
+        pass
         nData[var] = nData.groupby('year')[var].apply(lambda x: round((x-x.min())/(x.max()-x.min()), 2))
     return nData
 df = scale(df, var='total_dvoa')
