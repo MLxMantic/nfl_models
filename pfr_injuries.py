@@ -32,14 +32,15 @@ from selenium.webdriver.common.by import By
 ## Create variable that looks up the chrome driver library ##
 os.chdir("./")
 
-cur_week=8
+cur_week=10
+browser_default_download_dir = '/home/tomb/Downloads/'
+
+
 #driver = webdriver.Chrome(executable_path='/home/tom/Downloads/chromedriver_linux64/chromedriver')
 binary = "/home/tomb/Downloads/chromedriver/chromedriver"
 driver = webdriver.Chrome(binary)
 
 delay = 2
-
-delay = 1
 
 ## Create variable that looks up the chrome driver library ##
 
@@ -76,7 +77,7 @@ for tm in teams:
         div = soup.find_all('table', {'id':'team_injuries'})
         div_cur = soup.find_all('table', {'id':'{}_injury_report'.format(tm)})
 
-        lsts,lsts1,lsts2,lsts3,lsts4=[],[],[],[],[]
+        lsts,lsts1,lsts2,lsts3,lsts4, lsts5=[],[],[],[],[],[]
         for i in div_cur:
             tr = i.find_all('tr')
             for d in tr:
@@ -86,6 +87,8 @@ for tm in teams:
                     pass
                 else:
                     lsts.append(ply.text)
+                    hr = ply.get('href')
+                    lsts5.append(hr)
                 if td == []:
                     pass
                 else:
@@ -101,7 +104,7 @@ for tm in teams:
             full_list_cur.append(cur_team)
             
         
-        lst,lst1,lst2,lst3,lst4,lst5,lst6,lst7,lst8,lst9,lst10,lst11,lst12,lst13,lst14,lst15,lst16,lst17,lst18=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
+        lst,lst1,lst2,lst3,lst4,lst5,lst6,lst7,lst8,lst9,lst10,lst11,lst12,lst13,lst14,lst15,lst16,lst17,lst18,lst19=[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
         for i in div:
             tr = i.find_all('tr')
             for d in tr:
@@ -111,6 +114,7 @@ for tm in teams:
                     lst.append('None')
                 else:
                     lst.append(ply.text)
+                    hrf = ply.get('href')
             
                 
                 td1 = d.find_all('td', {'data-stat':"week_1"})
@@ -218,8 +222,8 @@ back1 = inj_cur
 back2 = inj_2022
 
 
-
-
+inj_2022 = back2
+inj_2022 = inj_2022[inj_2022['player'] != 'None']
 
 
 
@@ -229,6 +233,10 @@ inj_hist=inj_hist.apply(pd.to_numeric, errors='ignore')
 
 d = {'w1':1,'w2':2,'w3':3,'w4':4,'w5':5,'w6':6,'w7':7,'w8':8,'w9':9,'w10':10,'w11':11,'w12':12,'w13':13,'w14':14,'w15':15,'w16':16,'w17':17,'w18':18}
 inj_hist = pd.melt(inj_hist.rename(columns=d), id_vars=['player','team','year'], var_name='week')
+inj_2022 = pd.melt(inj_2022.rename(columns=d), id_vars=['player','team','year'], var_name='week')
+
+
+
 
 from utils import cleaning_dicts
 import numpy as np
@@ -268,6 +276,7 @@ def clean_pff(df):
     return df
 
 inj_hist = clean_pff(inj_hist)
+inj_2022 = clean_pff(inj_2022)
 
 #cur_week pfr injuries datafarme#
 team_clean = inj_cur
@@ -309,14 +318,25 @@ team_clean.reset_index(drop=True, inplace=True)
 team_clean=pd.concat([team_clean,df1], axis=1)
 
 team_clean = team_clean[['unique_id', 'player_id', 'player', 'team', 'year', 'week', 'value']]
-conc = pd.concat([inj_hist, team_clean], axis=0)
+conc = pd.concat([inj_hist, inj_2022, team_clean], axis=0)
+conc.drop_duplicates(inplace=True)
 conc = conc[conc['value'] == 1]
 
+conc.to_csv('./injhist.csv')
 
 from fuzzywuzzy import fuzz
 
 pff = pd.read_csv('/home/tomb/nfl_models/misc_files/pff_player_pros.csv', sep=',', error_bad_lines=True)
 
+from tqdm import tqdm
+
+conc['year']=conc['year'].apply(str)
+conc.insert(0, "team_id", (conc['team']+'_'+conc['year']))
+
+pff['year']=pff['year'].apply(str)
+pff.insert(0, "team_id", (pff['team']+'_'+pff['year']))
+
+df= conc 
 def match_name(name, list_names, min_score=0):
     # -1 score incase we don't get any matches
     max_score = 0
@@ -332,14 +352,17 @@ def match_name(name, list_names, min_score=0):
             max_score = score
     return (max_name, max_score)
 
+
+
 def fuzzy_inj_match(df):
     # List for dicts for easy dataframe creation
     dict_list = []
     # iterating over our players without salaries found above
-    for name in conc.player_id:
+    for name, x in tqdm(zip(df.player_id, df.team_id)):
         # Use our method to find best match, we can set a threshold here
-        match = match_name(name, pff.unique_id, 85)
-
+        temp_df = pff[pff['team_id'] == str(x)]
+        match = match_name(name, temp_df.unique_id, 85)
+        
         # New dict for storing data
         dict_ = {}
         dict_.update({"player_name" : name})
@@ -349,7 +372,32 @@ def fuzzy_inj_match(df):
     return pd.DataFrame(dict_list)
         #return pd.merge(df, merge_table, left_on='unique_player_id', right_on='player_name', how='left')
 
+
 # Display results
-conc_match = fuzzy_inj_match(conc)
+conc_match = fuzzy_inj_match(df)
+conc_match=conc_match[conc_match['score']>=90]
+conc_match.drop_duplicates(inplace=True)
+
+inj=df[['unique_id','player_id','value']]
+inj = pd.merge(inj, conc_match, left_on='player_id', right_on='player_name', how='left')
+inj = inj.loc[inj['score'].notnull()]
+
+inj.to_csv('./misc_files/pfr_injury.csv', index=False)
+print('Updated PFR injury data')
 
 
+url = "https://www.rotowire.com/football/injury-report.php"
+driver.get(url)
+
+time.sleep(5)
+driver.find_element("xpath", "//*[text()='CSV']").click()
+print('Retrieved csv from: {}'.format(url))
+
+
+while not os.path.exists(browser_default_download_dir+'nfl-injury-report.csv'):
+    time.sleep(1)
+if os.path.isfile(browser_default_download_dir+'nfl-injury-report.csv'):
+    df = pd.read_csv(browser_default_download_dir+'nfl-injury-report.csv')
+    df.to_csv('./current_data/week_'+str(cur_week)+'/nfl_injuries.csv', index=False)
+    print("updated rotoworld injury file")
+    os.remove(browser_default_download_dir+'nfl-injury-report.csv')
