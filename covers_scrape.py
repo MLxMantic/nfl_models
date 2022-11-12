@@ -33,7 +33,7 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-cur_week=str(9)
+cur_week=str(10)
 
 chrome_options = Options()
 chrome_options.add_argument('--no-sandbox')
@@ -45,7 +45,7 @@ delay = 5
 ## Create variable that looks up the chrome driver library ##
 
 ### CHANGE ALL DATES, INCLUDING TEXT FILES3BEFORE BEGINNING TO SCRAPE ###
-week = 9
+week = 10
 
 
 
@@ -55,7 +55,7 @@ week = 9
 # 		'2022-09-29',
 # 		'2022-10-06',
 # 		'2022-10-13',
-dates = ['2022-11-03']
+dates = ['2022-11-10']
 
 url = "https://www.covers.com/sports/nfl/matchups?selectedDate="
 df = []
@@ -247,7 +247,8 @@ sp.drop(['covers_team_id','trash','week','away_team','home_team','cur_ou','cur_s
 sp['schedule_season']=sp['schedule_season'].apply(int)
 
 sp_comb = pd.read_csv("/home/tomb/nfl_models/current_data/week_"+cur_week+"/spreadsw"+cur_week+".csv")
-sp_comb = sp_comb[(sp_comb['schedule_season']<=2022) & (sp_comb['schedule_week'] != int(cur_week))]
+sub = sp_comb[(sp_comb['schedule_season']==2022) & (sp_comb['schedule_week']==int(cur_week))]
+sp_comb = sp_comb[~sp_comb.index.isin(sub.index)]
         
 sp_comb = pd.concat([sp_comb, sp], axis=0)                  
 sp_comb.to_csv("/home/tomb/nfl_models/current_data/week_"+cur_week+"/spreadsw"+cur_week+".csv", index=False)       
