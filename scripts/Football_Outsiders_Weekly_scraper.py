@@ -43,7 +43,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-cur_week=str(10)
+cur_week=str(11)
 
 chrome_options = Options()
 chrome_options.add_argument('--no-sandbox')
