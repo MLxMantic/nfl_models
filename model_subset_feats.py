@@ -32,13 +32,13 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.svm import LinearSVC
 from xgboost.sklearn import XGBRegressor, XGBClassifier
 
-df = pd.read_csv('/home/tomb/nfl_models/modeling_data/nfl_spreads_w13.csv')
+df = pd.read_csv('/home/tomb/nfl_models/modeling_data/nfl_spreads_w15.csv')
 
 
 begin_year=2014
 cutoff_week=4
 val_year_cutoff=2020
-cur_week=13
+cur_week=15
 
 df['spread_abs']=df['spread_favorite']*-1
 df['line']=df['over_under_line']
@@ -62,13 +62,15 @@ ids= ['spread_sqrd',
 'spread_abs',
 'team_id','cover_int','schedule_week','schedule_season','spread_favorite','over_under_line','home_matchup_id']
 
-# features = pd.read_csv('/home/tomb/nfl_models/modeling_data/weekly_features/feats_week10_common.csv')
-# features.drop_duplicates(inplace=True)
-# # print(features.shape)
-# # features = features.head(n=250)
-# cols = list(set(features['feature']))+ids
-# df = df[cols]
-# df.to_csv('/home/tomb/nfl_models/modeling_data/weekly_features/w10_final_feats.csv', index=False)
+features = pd.read_csv('/home/tomb/nfl_models/modeling_data/weekly_features/feats_week10_common.csv')
+features.drop_duplicates(inplace=True)
+print(features.shape)
+#features = features.tail(n=500)
+good = list(set(features['feature']))
+cols = [i for i in good if not ('left' in i or 'center' in i or 'right' in i)]+ids
+
+df = df[cols]
+df.to_csv('/home/tomb/nfl_models/modeling_data/weekly_features/w15_final_feats_cut.csv', index=False)
 
 
 df.fillna(df.median(), inplace=True)
@@ -392,4 +394,7 @@ conf_matrix(data_conc_2022['cover_int'], data_conc_2022['preds'], classes=['cove
 
 import dataframe_image as dfi
 df_styled = data_conc_cur.style.background_gradient()
-dfi.export(df_styled,"/home/tomb/nfl_models/predictions"+str(cur_week)+".png")
+dfi.export(df_styled,"/home/tomb/nfl_models/predictions_final_"+str(cur_week)+".png")
+
+
+
