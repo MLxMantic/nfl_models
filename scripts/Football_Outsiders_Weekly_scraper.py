@@ -43,11 +43,11 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-cur_week=str(11)
+cur_week=str(16)
 
 chrome_options = Options()
 chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome('/home/tomb/nfl_models/chromedriver',chrome_options=chrome_options)
+driver = webdriver.Chrome('/home/tom/Downloads/chromedriver_linux64/chromedriver',chrome_options=chrome_options)
 
 #os.path.abspath(os.getcwd())
 
@@ -272,4 +272,4 @@ def clean_spreads(df):
 
 df['week'] = df['week'].apply(int)
 df = clean_spreads(df)
-df.to_csv('/home/tomb/nfl_models/current_data/week_'+cur_week+'/fo_weekly_update.csv', index=False)
+df.to_csv('/home/tom/nfl_models/current_data/week_'+cur_week+'/fo_weekly_update.csv', index=False)

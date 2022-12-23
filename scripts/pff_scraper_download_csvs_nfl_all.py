@@ -32,14 +32,14 @@ from selenium.webdriver.chrome.options import Options
 chrome_options = Options()
 chrome_options.add_experimental_option("prefs", {"download.default_directory": r"./"})
 chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome('/home/tomb/nfl_models/chromedriver',chrome_options=chrome_options)
+driver = webdriver.Chrome("/home/tom/Downloads/chromedriver_linux64/chromedriver",chrome_options=chrome_options)
 
 
 #os.path.abspath(os.getcwd())
 
-cur_week = str(11)
+cur_week = str(16)
 
-os.chdir('/home/tomb/nfl_models/scripts/')
+os.chdir('/home/tom/nfl_models/scripts/')
 delay = 2
 
 
@@ -47,7 +47,7 @@ delay = 2
 
 ### CHANGE ALL DATES, INCLUDING TEXT FILES3BEFORE BEGINNING TO SCRAPE ###
 year_list = ['2022']#,'2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021']#,'2009','2010','2011','2012',
-week_list = ['1','2','3','4','5','6','7','8','9','10']#,,'5','6','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+week_list = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15']#,,'5','6','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
 
 
 
@@ -587,5 +587,5 @@ year_team_summ['output'] = year_team_summ['output'].astype(str)
 year_team_summ['output'] = year_team_summ['output'].str.replace(' days','')
 
 
-year_team_summ.to_csv('/home/tomb/nfl_models/current_data/week_'+cur_week+'/team_game_summaries_w'+cur_week+'.csv', index=False)
+year_team_summ.to_csv('/home/tom/nfl_models/current_data/week_'+cur_week+'/team_game_summaries_w'+cur_week+'.csv', index=False)
 
