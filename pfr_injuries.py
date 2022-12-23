@@ -32,12 +32,12 @@ from selenium.webdriver.common.by import By
 ## Create variable that looks up the chrome driver library ##
 os.chdir("./")
 
-cur_week=10
+cur_week=16
 browser_default_download_dir = '/home/tomb/Downloads/'
 
 
 #driver = webdriver.Chrome(executable_path='/home/tom/Downloads/chromedriver_linux64/chromedriver')
-binary = "/home/tomb/Downloads/chromedriver/chromedriver"
+binary = "/home/tom/Downloads/chromedriver_linux64/chromedriver"
 driver = webdriver.Chrome(binary)
 
 delay = 2
@@ -227,7 +227,7 @@ inj_2022 = inj_2022[inj_2022['player'] != 'None']
 
 
 
-inj_hist = pd.read_csv('/home/tomb/nfl_models/pfr/pfr_injury_history.csv', sep=',', error_bad_lines=True)
+inj_hist = pd.read_csv('/home/tom/nfl_models/pfr/pfr_injury_history.csv', sep=',', error_bad_lines=True)
 
 inj_hist=inj_hist.apply(pd.to_numeric, errors='ignore')
 
@@ -326,7 +326,7 @@ conc.to_csv('./injhist.csv')
 
 from fuzzywuzzy import fuzz
 
-pff = pd.read_csv('/home/tomb/nfl_models/misc_files/pff_player_pros.csv', sep=',', error_bad_lines=True)
+pff = pd.read_csv('/home/tom/nfl_models/misc_files/pff_player_pros.csv', sep=',', error_bad_lines=True)
 
 from tqdm import tqdm
 
